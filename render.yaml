@@ -26,10 +26,9 @@ services:
         value: "1"
       - key: INVARIANT_CORS_ORIGINS
         value: https://invariantdast.vercel.app
-      # Scope allowlist: only these origins may be scanned. Starts closed and is set to the
-      # two demo API URLs once Render has assigned them.
+      # Scope allowlist: only these origins may be scanned (the two demo APIs below).
       - key: INVARIANT_ALLOWED_TARGETS
-        value: https://pending.invalid
+        value: https://invariantdast-demo-sample-z1pr.onrender.com,https://invariantdast-demo-vulnerable-z1pr.onrender.com
 
   # Secure reference API: every check should pass.
   - type: web
