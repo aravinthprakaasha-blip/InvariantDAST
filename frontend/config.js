@@ -3,8 +3,11 @@
   // - Local development: the FastAPI server on port 8000.
   // - Deployed (Vercel): "" = same origin; vercel.json forwards /api/* to the hosted backend,
   //   so the session cookie stays first-party.
-  var local = ["localhost", "127.0.0.1", ""].indexOf(location.hostname) !== -1;
-  if (window.INVARIANT_API == null) window.INVARIANT_API = local ? "http://localhost:8000" : "";
+  // Locally, use the same host name the page was opened with (localhost vs 127.0.0.1),
+  // so the session cookie lives on the same site as the page.
+  var host = location.hostname;
+  var local = ["localhost", "127.0.0.1", ""].indexOf(host) !== -1;
+  if (window.INVARIANT_API == null) window.INVARIANT_API = local ? "http://" + (host || "localhost") + ":8000" : "";
 
   // The hosted backend runs on a free plan that sleeps when idle and takes up to ~1 minute
   // to wake. While it wakes, the proxy answers 502/503/504 (or the request fails outright).

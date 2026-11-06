@@ -67,6 +67,24 @@ def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="milliseconds")
 
 
+def describe_http_error(e: Exception) -> str:
+    """Plain-language reason a request to the target failed (no OS-specific error codes)."""
+    if isinstance(e, httpx.ConnectTimeout):
+        return "connection timed out; is the address correct and reachable?"
+    if isinstance(e, httpx.TimeoutException):
+        return "the API took too long to respond"
+    if isinstance(e, httpx.ConnectError):
+        text = str(e).lower()
+        if "name or service" in text or "getaddrinfo" in text or "nodename" in text or "11001" in text:
+            return "host name not found; check the address"
+        if "ssl" in text or "certificate" in text:
+            return "secure connection failed (TLS/certificate problem)"
+        return "connection refused; is the API running at that address?"
+    if isinstance(e, httpx.TooManyRedirects):
+        return "too many redirects"
+    return f"network error ({type(e).__name__})"
+
+
 class Abort(Exception):
     """Stops the scan (circuit breaker or unrecoverable target error)."""
 
@@ -159,7 +177,7 @@ class Scan:
         try:
             r = self.client.request(method, path, json=body, headers=self.headers(persona))
         except httpx.HTTPError as e:
-            raise Abort(f"Target unreachable: {method} {path} → {type(e).__name__}: {e}") from None
+            raise Abort(f"Target unreachable during {method} {path}: {describe_http_error(e)}") from None
         if r.status_code >= 500:
             self.n_5xx += 1
             if self.n_5xx >= MAX_SERVER_ERRORS:
@@ -274,7 +292,7 @@ class Scan:
             self.n_requests += 1
             self.client.get("/", headers=self.headers(None), timeout=WAKE_TIMEOUT)
         except httpx.HTTPError as e:
-            raise Abort(f"Target unreachable: {type(e).__name__}: {e}") from None
+            raise Abort(f"Target unreachable: {describe_http_error(e)}") from None
         waited = time.monotonic() - started
         if waited > 3:
             self.log("info", f"Target woke up after {waited:.0f}s")

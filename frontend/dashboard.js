@@ -167,6 +167,7 @@
     const fail = (el, msg) => { if (el) { el.setAttribute("aria-invalid", "true"); el.focus(); } $("targetError").textContent = msg; };
     if (missing) return fail(f[missing], "Fill in every field.");
     if (!/^https?:\/\/\S+$/i.test(f.base_url.value.trim())) return fail(f.base_url, "Base URL must start with http:// or https://");
+    if (!/^[A-Za-z0-9-]+$/.test(f.auth_header.value.trim())) return fail(f.auth_header, "Tenant header can only use letters, numbers and hyphens (for example X-Agency-ID).");
     if (f.persona_a.value.trim() === f.persona_b.value.trim()) return fail(f.persona_b, "Agency A and Agency B must be different tenants.");
     if (!f.authorized.checked) return fail(f.authorized, "Confirm you're authorised to test this API.");
     const body = Object.fromEntries(required.map((k) => [k, f[k].value.trim()]));
@@ -217,9 +218,21 @@
     const b = e.target.closest("button[data-copy]");
     if (!b) return;
     e.preventDefault();
-    const text = b.closest("div").querySelector("pre").textContent;
-    try { await navigator.clipboard.writeText(text); b.textContent = "Copied"; }
-    catch (_) { b.textContent = "Copy failed"; }
+    // The <pre> is a sibling of the label row, inside the same column.
+    const pre = b.closest(".f-cols > div")?.querySelector("pre");
+    if (!pre) return;
+    const text = pre.textContent;
+    let ok = false;
+    try { await navigator.clipboard.writeText(text); ok = true; }
+    catch (_) {
+      // Fallback for browsers/contexts where the async clipboard API is unavailable or blocked.
+      const ta = document.createElement("textarea");
+      ta.value = text; ta.setAttribute("readonly", ""); ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      try { ok = document.execCommand("copy"); } catch (_) { ok = false; }
+      ta.remove();
+    }
+    b.textContent = ok ? "Copied" : "Copy failed";
     setTimeout(() => (b.textContent = "Copy"), 1500);
   });
 

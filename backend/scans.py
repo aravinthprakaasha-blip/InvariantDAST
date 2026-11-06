@@ -3,6 +3,7 @@
 import asyncio
 import json
 import os
+import re
 from contextlib import closing
 from urllib.parse import urlparse
 
@@ -43,7 +44,7 @@ def check_scope(url: str) -> None:
 class TargetIn(BaseModel):
     name: str = Field(min_length=1, max_length=80)
     base_url: str = Field(min_length=8, max_length=300)
-    auth_header: str = Field(default="X-Agency-ID", min_length=1, max_length=64, pattern=r"^[A-Za-z0-9-]+$")
+    auth_header: str = Field(default="X-Agency-ID", min_length=1, max_length=64)
     persona_a: str = Field(min_length=1, max_length=200)
     persona_b: str = Field(min_length=1, max_length=200)
     origin: str = Field(min_length=2, max_length=8)
@@ -59,6 +60,14 @@ class TargetIn(BaseModel):
     @classmethod
     def code(cls, v: str) -> str:
         return v.strip().upper()
+
+    @field_validator("auth_header")
+    @classmethod
+    def header_name(cls, v: str) -> str:
+        v = v.strip()
+        if not re.fullmatch(r"[A-Za-z0-9-]+", v):
+            raise ValueError("Tenant header can only use letters, numbers and hyphens (for example X-Agency-ID)")
+        return v
 
     @field_validator("base_url")
     @classmethod
