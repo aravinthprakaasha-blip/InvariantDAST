@@ -4,8 +4,20 @@
   const forms = { login: document.getElementById("form-login"), signup: document.getElementById("form-signup") };
   const tabs = Array.from(document.querySelectorAll(".auth-tab"));
 
-  // Already signed in? Go straight to the dashboard.
-  api("/api/auth/session").then((s) => { if (s.signed_in) location.replace("dashboard.html"); }).catch(() => {});
+  // Wake the backend right away (it sleeps when idle on free hosting), and go straight to the
+  // dashboard if already signed in. While it wakes, show a banner instead of failing.
+  const banner = document.getElementById("wakeBanner"), bannerText = document.getElementById("wakeText");
+  const ready = window.invariantWake(() => { banner.hidden = false; });
+  ready
+    .then((s) => {
+      banner.hidden = true;
+      if (s && s.signed_in) location.replace("dashboard.html");
+    })
+    .catch((err) => {
+      banner.hidden = false;
+      banner.classList.add("error");
+      bannerText.textContent = err.message;
+    });
 
   function setMode(mode, focus = true) {
     tabs.forEach((t) => {
@@ -76,9 +88,13 @@
         : { email: f.email.value.trim(), password: f.password.value };
 
       submit.disabled = true;
-      submit.textContent = mode === "signup" ? "Creating account…" : "Signing in…";
       errorEl.textContent = "";
       try {
+        // Make sure the server is awake before sending the form, so it isn't lost to a 502.
+        submit.textContent = "Waking up the server…";
+        await window.invariantWake(() => { banner.hidden = false; });
+        banner.hidden = true;
+        submit.textContent = mode === "signup" ? "Creating account…" : "Signing in…";
         await api(`/api/auth/${mode}`, { method: "POST", body: JSON.stringify(body) });
         location.replace("dashboard.html");
       } catch (err) {

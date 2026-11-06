@@ -336,6 +336,9 @@
   /* ---------------- CTA form → backend ---------------- */
   // Set by config.js ("" on the deployed site = same origin).
   const API_BASE = window.INVARIANT_API ?? "http://localhost:8000";
+  // Start waking the (free-tier) backend in the background, so it's ready by the time
+  // a visitor signs in or sends the form.
+  if (window.invariantWake) window.invariantWake().catch(() => {});
   const form = $("#ctaForm"), note = $("#formNote"), submitBtn = $("button[type=submit]", form);
   const setNote = (msg, isError) => { note.textContent = msg; note.classList.toggle("error", !!isError); };
   form.addEventListener("submit", async (e) => {
@@ -345,6 +348,11 @@
     submitBtn.textContent = "Sending…";
     setNote("");
     try {
+      if (window.invariantWake) {
+        submitBtn.textContent = "Waking up the server…";
+        await window.invariantWake();
+        submitBtn.textContent = "Sending…";
+      }
       const res = await fetch(`${API_BASE}/api/pilot-requests`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -353,7 +361,9 @@
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         const detail = Array.isArray(data.detail) ? data.detail[0]?.msg?.replace(/^Value error, /, "") : data.detail;
-        throw new Error(detail || `Request failed (${res.status})`);
+        const waking = [502, 503, 504].includes(res.status)
+          ? "The server is waking up (free hosting can take up to a minute). Please try again in a few seconds." : null;
+        throw new Error(detail || waking || `Request failed (${res.status})`);
       }
       setNote(data.status === "already_registered"
         ? `✓ ${data.email} is already on our list — we'll be in touch.`

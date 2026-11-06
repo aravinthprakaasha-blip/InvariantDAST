@@ -371,6 +371,10 @@
     }
   }
 
+  // GET requests already retry while the server wakes; just tell the user why it's slow.
+  window.invariantWake(() => {
+    $("dashLoading").textContent = "Waking up the server — free hosting can take up to a minute…";
+  }).catch(() => {});
   api("/api/auth/me")
     .then(async ({ user }) => {
       renderUser(user);

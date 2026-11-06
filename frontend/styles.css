@@ -432,6 +432,11 @@ td.route .m { display: inline-block; width: 52px; color: var(--dim); }
 .pw-meter[data-score="2"] i { width: 50%; background: var(--warn); }
 .pw-meter[data-score="3"] i { width: 75%; background: var(--accent); }
 .pw-meter[data-score="4"] i { width: 100%; background: var(--accent); }
+.wake-banner { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding: 12px 14px; border-radius: 10px; font-size: 13.5px; color: var(--warn); background: var(--warn-soft); border: 1px solid rgba(255,181,71,.3); }
+.wake-banner.error { color: var(--crit); background: var(--crit-soft); border-color: rgba(255,107,107,.35); }
+.wake-banner.error .spinner { display: none; }
+.spinner { width: 16px; height: 16px; flex: none; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 .auth-error { min-height: 22px; margin: -4px 0 12px !important; font-size: 13.5px; color: var(--crit); }
 .auth-switch { text-align: center; margin-top: 22px !important; font-size: 14px; color: var(--muted); }
 .auth-switch a { color: var(--accent); font-weight: 500; }

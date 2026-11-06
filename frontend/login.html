@@ -36,6 +36,10 @@
   <main class="auth-main">
     <a href="index.html" class="auth-back">← Back to site</a>
     <div class="auth-card">
+      <div class="wake-banner" id="wakeBanner" role="status" hidden>
+        <span class="spinner" aria-hidden="true"></span>
+        <span id="wakeText">Waking up the server — free hosting can take up to a minute…</span>
+      </div>
       <div class="auth-tabs" role="tablist" aria-label="Account">
         <button class="auth-tab active" id="tab-login" role="tab" aria-selected="true" aria-controls="form-login" data-mode="login">Sign in</button>
         <button class="auth-tab" id="tab-signup" role="tab" aria-selected="false" aria-controls="form-signup" data-mode="signup">Create account</button>
