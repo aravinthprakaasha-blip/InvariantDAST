@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>InvariantDAST</title>
+  <meta name="description" content="Autonomous, neuro-symbolic dynamic security testing for stateful B2B travel platforms. Zero false positives, safe by design, patch-ready findings." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b0f0d'/%3E%3Cpath d='M8 22 L16 8 L24 22 Z' fill='none' stroke='%237CF29C' stroke-width='2.5' stroke-linejoin='round'/%3E%3Ccircle cx='16' cy='17' r='2.4' fill='%237CF29C'/%3E%3C/svg%3E" />
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a href="#top" class="brand" aria-label="InvariantDAST home">
+      <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><path d="M7 23 L16 7 L25 23 Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><circle cx="16" cy="17.5" r="2.6" fill="currentColor"/></svg>
+      <span>Invariant<b>DAST</b></span>
+    </a>
+    <nav class="nav-links" id="navLinks">
+      <a href="#state-graph">State graph</a>
+      <a href="#surface">Attack surface</a>
+      <a href="#oracle">Oracle</a>
+      <a href="#safety">Safety</a>
+      <a href="#remediation">Remediation</a>
+      <a href="login.html" class="nav-signin">Sign in</a>
+    </nav>
+    <a href="#contact" class="btn btn-sm">Request a pilot</a>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span></button>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="dot"></span> Neuro-symbolic DAST for B2B travel</p>
+        <h1>Your booking flow has rules.<br/><em>We prove when they break.</em></h1>
+        <p class="lede">InvariantDAST models your platform as an executable state graph — search, quote, hold, issue, amend, refund — then attacks the business logic between the steps. Every finding is verified by differential proof, every mutation is rolled back, and every fix arrives as a pull request.</p>
+        <div class="hero-cta">
+          <a href="login.html#signup" class="btn">Start scanning</a>
+          <a href="#state-graph" class="btn btn-ghost">See how it works →</a>
+        </div>
+        <dl class="hero-stats">
+          <div><dt>12</dt><dd>business-logic checks per scan</dd></div>
+          <div><dt>2</dt><dd>tenant personas, diffed per request</dd></div>
+          <div><dt>100%</dt><dd>test bookings rolled back</dd></div>
+        </dl>
+      </div>
+
+      <div class="terminal" aria-label="Simulated InvariantDAST run">
+        <div class="term-bar">
+          <i></i><i></i><i></i>
+          <span>invariant run --trigger=deploy#4182</span><span class="demo-tag">Illustrative example</span>
+        </div>
+        <pre class="term-body" id="termBody"></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROBLEM -->
+  <section class="section problem">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="kicker">01 — The problem</p>
+        <h2>Generic scanners see endpoints. Attackers see workflows.</h2>
+        <p>Travel APIs are deeply stateful. Hit <code>/bookings/{id}/refund</code> without a ticketed booking and you get a 404, not a finding. So conventional DAST drowns you in syntax noise and never reaches the logic that loses money.</p>
+      </div>
+      <div class="compare">
+        <article class="compare-card bad">
+          <header><span class="tag tag-muted">Conventional DAST</span></header>
+          <ul>
+            <li><span>✕</span>Treats every route as stateless and isolated</li>
+            <li><span>✕</span>Sprays SQLi / XSS payloads at JSON bodies</li>
+            <li><span>✕</span>Hours-long scheduled scans, whole-app every time</li>
+            <li><span>✕</span>LLM "maybe-vulnerable" guesses, triage fatigue</li>
+            <li><span>✕</span>Leaves orphaned holds and locked inventory behind</li>
+            <li><span>✕</span>Vague PDF reports nobody actions</li>
+          </ul>
+        </article>
+        <article class="compare-card good">
+          <header><span class="tag">InvariantDAST</span></header>
+          <ul>
+            <li><span>✓</span>Walks real lifecycle prerequisites via a Petri-net model</li>
+            <li><span>✓</span>Tampers fares, markups, currency, sequence and timing</li>
+            <li><span>✓</span>AST blast-radius: only changed and downstream routes</li>
+            <li><span>✓</span>Dual-tenant structural diffing — deterministic proof</li>
+            <li><span>✓</span>Compensating rollback for every mutating call</li>
+            <li><span>✓</span>PR bundle: curl repro, impact, and patch diff</li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATE GRAPH -->
+  <section class="section" id="state-graph">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="kicker">02 — Behavioral State Graph</p>
+        <h2>A living model of what your platform must never allow.</h2>
+        <p>From crawl traffic and user journeys, the agent builds a Petri net of business prerequisites. It legitimately drives a booking to the right state, then fires the transitions that should be impossible. Pick an attack below.</p>
+      </div>
+
+      <div class="graph-panel">
+        <div class="graph-controls" role="tablist" aria-label="Attack scenarios">
+          <button class="chip active" data-scenario="happy" role="tab" aria-selected="true">Legitimate journey</button>
+          <button class="chip" data-scenario="skip" role="tab" aria-selected="false">Step-skip to issue</button>
+          <button class="chip" data-scenario="tamper" role="tab" aria-selected="false">Fare tampering</button>
+          <button class="chip" data-scenario="race" role="tab" aria-selected="false">Double-refund race</button>
+          <span class="demo-tag">Illustrative example</span>
+        </div>
+        <div class="graph-stage">
+          <svg id="petri" viewBox="0 0 920 300" role="img" aria-label="Petri net of the booking lifecycle"></svg>
+        </div>
+        <div class="graph-log">
+          <div class="log-head">
+            <span id="scenarioTitle">Legitimate journey</span>
+            <span class="verdict" id="scenarioVerdict">invariants hold</span>
+          </div>
+          <ol id="scenarioLog"></ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BLAST RADIUS -->
+  <section class="section alt">
+    <div class="wrap split">
+      <div>
+        <p class="kicker">03 — Near-real-time triggering</p>
+        <h2>Test what changed. In minutes, not hours.</h2>
+        <p>A commit, a frontend bundle rebuild, or a gateway route change triggers a run. The blast-radius analyzer diffs the AST, follows call graphs to downstream dependents, and schedules only the state paths that touch them.</p>
+        <ul class="ticks">
+          <li>Webhooks for GitHub, GitLab, Bitbucket and gateway config</li>
+          <li>Call-graph traversal across services and shared modules</li>
+          <li>Unchanged paths reuse their last verified result</li>
+        </ul>
+      </div>
+      <div class="blast">
+        <span class="demo-tag">Illustrative example</span>
+        <div class="blast-diff">
+          <div class="file">pricing/markup.py <span>+4 −1</span></div>
+<pre><span class="ln">41</span>  def apply_markup(quote, agency):
+<span class="ln">42</span>-     rate = agency.markup_rate
+<span class="ln">42</span>+     rate = quote.get("markup", agency.markup_rate)
+<span class="ln">43</span>      return quote["base"] * (1 + rate)</pre>
+        </div>
+        <div class="blast-tree">
+          <div class="node changed">apply_markup()</div>
+          <div class="branch">
+            <div class="node hit">POST /quotes</div>
+            <div class="node hit">PATCH /bookings/{id}/amend</div>
+            <div class="node hit">POST /bookings/{id}/issue</div>
+          </div>
+          <div class="node skip">14 other routes — unaffected, skipped</div>
+          <div class="blast-meter"><span style="--w:18%"></span><em>3 of 17 routes · est. 4m 40s</em></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ATTACK SURFACE -->
+  <section class="section" id="surface">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="kicker">04 — Attack surface inventory</p>
+        <h2>Find the Shadow APIs. Bury the Zombies.</h2>
+        <p>A three-way telemetry matrix contrasts routes extracted from JavaScript bundles and archives with 30–90 days of gateway logs and your published spec. The output is an authoritative, auto-maintained OpenAPI 3.1 document.</p>
+      </div>
+
+      <div class="matrix">
+        <div class="matrix-filters" role="tablist" aria-label="Filter routes">
+          <button class="chip active" data-filter="all">All <b id="cnt-all"></b></button>
+          <button class="chip" data-filter="documented">Documented <b id="cnt-documented"></b></button>
+          <button class="chip" data-filter="shadow">Shadow <b id="cnt-shadow"></b></button>
+          <button class="chip" data-filter="zombie">Zombie <b id="cnt-zombie"></b></button>
+          <span class="demo-tag">Illustrative example</span>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr><th>Route</th><th>JS bundle</th><th>Gateway traffic (90d)</th><th>In spec</th><th>Class</th></tr>
+            </thead>
+            <tbody id="matrixBody"></tbody>
+          </table>
+        </div>
+        <div class="legend">
+          <span><i class="sw documented"></i><b>Documented</b> — in spec, seen in traffic</span>
+          <span><i class="sw shadow"></i><b>Shadow</b> — steady traffic, no documentation</span>
+          <span><i class="sw zombie"></i><b>Zombie</b> — still responds, zero legitimate traffic</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ORACLE -->
+  <section class="section alt" id="oracle">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="kicker">05 — Dual-Persona Differential Oracle</p>
+        <h2>Proof, not probability.</h2>
+        <p>Two isolated, low-privilege tenants. Agency A creates a real booking; Agency B tries to read or change it. A deterministic structural JSON diff against B's own baseline decides — no language model gets a vote.</p>
+      </div>
+
+      <span class="demo-tag block">Illustrative example</span>
+      <div class="oracle">
+        <div class="persona a">
+          <div class="persona-head"><span class="avatar">A</span><div><b>Agency A</b><small>X-Agency-ID: AGY-A · owner</small></div></div>
+          <code class="req">GET /bookings/bk_7f3a…</code>
+<pre class="json" id="jsonA"></pre>
+        </div>
+        <div class="oracle-mid">
+          <button class="btn" id="runOracle">Run differential</button>
+          <div class="eq" id="oracleEq">
+            <span>diff(A, B)</span>
+            <b>?</b>
+          </div>
+        </div>
+        <div class="persona b">
+          <div class="persona-head"><span class="avatar">B</span><div><b>Agency B</b><small>X-Agency-ID: AGY-B · attacker persona</small></div></div>
+          <code class="req">GET /bookings/bk_7f3a…</code>
+<pre class="json" id="jsonB"><span class="muted">// awaiting cross-tenant request</span></pre>
+        </div>
+      </div>
+      <div class="oracle-result" id="oracleResult" hidden>
+        <div class="badge-crit">BOLA / IDOR · CONFIRMED</div>
+        <p>Response body for Agency B is structurally identical to the owner's (<b>11/11</b> keys, <b>0</b> masked fields) and contains <code>agency_id: "AGY-A"</code>. Expected: <code>403</code> with B's error schema. Proof is reproducible and attached to the PR bundle.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SAFETY -->
+  <section class="section" id="safety">
+    <div class="wrap split">
+      <div>
+        <p class="kicker">06 — Compensating Transaction Engine</p>
+        <h2>Aggressive tests. Zero operational residue.</h2>
+        <p>Every mutating request is linked to its compensating action before it is sent. Holds are cancelled, seats released, test refunds reversed. Circuit breakers watch wallet balance and inventory so a test run can never exhaust credit or lock a flight.</p>
+        <ul class="ticks">
+          <li>Saga log with <code>X-Invariant-Trace</code> on every request</li>
+          <li>Adaptive rate limiting with exponential back-off</li>
+          <li>Hard stops on balance, seat-lock and error-rate thresholds</li>
+        </ul>
+      </div>
+      <div class="saga">
+        <div class="saga-head">
+          <span>Saga ledger · run #4182 <span class="demo-tag">Illustrative example</span></span>
+          <span class="pill ok" id="sagaStatus">balanced</span>
+        </div>
+        <ul class="saga-list" id="sagaList"></ul>
+        <div class="breakers">
+          <div class="breaker"><label>Wallet spend</label><div class="bar"><span id="brWallet" style="--w:12%"></span></div><small>₹2,400 / ₹20,000 cap</small></div>
+          <div class="breaker"><label>Seats locked</label><div class="bar"><span id="brSeats" style="--w:8%"></span></div><small>2 / 25 cap</small></div>
+          <div class="breaker"><label>5xx rate</label><div class="bar"><span id="brErr" style="--w:3%"></span></div><small>0.3% / 5% cap</small></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REMEDIATION -->
+  <section class="section alt" id="remediation">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="kicker">07 — Developer-ready remediation</p>
+        <h2>Not an alert. A pull request.</h2>
+        <p>Each verified finding ships as a bundle: a minimal reproducible <code>curl</code> script, the business impact in plain terms, and an exact patch. On the next commit the proof-of-concept re-runs automatically and closes the loop.</p>
+      </div>
+
+      <div class="pr">
+        <div class="pr-head">
+          <span class="pr-icon">⑂</span>
+          <div>
+            <b>fix(bookings): enforce tenant ownership on GET /bookings/{id}</b>
+            <span class="demo-tag">Illustrative example</span>
+            <small>invariant-bot wants to merge 1 commit into <code>main</code> · finding INV-0231 · severity critical</small>
+          </div>
+        </div>
+        <div class="tabs" role="tablist">
+          <button class="tab active" data-tab="repro" role="tab">repro.sh</button>
+          <button class="tab" data-tab="impact" role="tab">Impact</button>
+          <button class="tab" data-tab="patch" role="tab">Patch</button>
+        </div>
+        <div class="tab-panel active" data-panel="repro">
+<pre class="code"><span class="c"># INV-0231 — cross-tenant booking read (BOLA)</span>
+<span class="c"># 1. Agency A creates a hold</span>
+BK=$(curl -s -X POST $API/bookings/hold \
+  -H <span class="s">"X-Agency-ID: AGY-A"</span> \
+  -d <span class="s">'{"quote_id":"'$QUOTE_A'"}'</span> | jq -r .booking_id)
+
+<span class="c"># 2. Agency B reads it — expected 403</span>
+curl -s $API/bookings/$BK -H <span class="s">"X-Agency-ID: AGY-B"</span>
+<span class="c"># → 200 OK  {"booking_id": "...", "agency_id": "AGY-A", ...}</span>
+
+<span class="c"># 3. Compensation</span>
+curl -s -X POST $API/bookings/$BK/cancel -H <span class="s">"X-Agency-ID: AGY-A"</span></pre>
+        </div>
+        <div class="tab-panel" data-panel="impact">
+          <div class="impact">
+            <div><b>What an attacker gets</b><p>Any agency on the platform can enumerate other agencies' bookings: passenger names, itineraries, fares and markups.</p></div>
+            <div><b>Business exposure</b><p>Passenger PII disclosure across tenants, competitive leakage of negotiated fares, likely GDPR / DPDP notification event.</p></div>
+            <div><b>Exploitability</b><p>Single unauthenticated-to-tenant request; booking IDs are leaked in amendment emails.</p></div>
+          </div>
+        </div>
+        <div class="tab-panel" data-panel="patch">
+<pre class="code diff"><span class="h">--- a/sample_travel_api/main.py</span>
+<span class="h">+++ b/sample_travel_api/main.py</span>
+<span class="h">@@ def get_booking(booking_id, agency_id) @@</span>
+     booking = bookings.get(booking_id)
+     if not booking:
+         raise HTTPException(404, "Booking not found")
+<span class="add">+    if booking["agency_id"] != agency_id:</span>
+<span class="add">+        raise HTTPException(404, "Booking not found")</span>
+     return booking</pre>
+        </div>
+        <div class="loop">
+          <div class="loop-step done"><i>1</i>Finding verified</div>
+          <div class="loop-step done"><i>2</i>PR opened</div>
+          <div class="loop-step done"><i>3</i>Patch merged</div>
+          <div class="loop-step live"><i>4</i>PoC re-executed → 404</div>
+          <div class="loop-step"><i>5</i>Auto-closed</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PIPELINE -->
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="kicker">How it fits together</p>
+        <h2>One autonomous loop, from deploy to verified fix.</h2>
+      </div>
+      <ol class="pipeline">
+        <li><b>Trigger</b><span>Commit, bundle rebuild or gateway change</span></li>
+        <li><b>Scope</b><span>AST blast radius picks affected routes</span></li>
+        <li><b>Model</b><span>Petri net resolves lifecycle prerequisites</span></li>
+        <li><b>Attack</b><span>Logic, sequence, tamper and race tests</span></li>
+        <li><b>Prove</b><span>Dual-persona structural differential</span></li>
+        <li><b>Compensate</b><span>Rollback every mutation</span></li>
+        <li><b>Remediate</b><span>PR bundle, re-verify, close</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="section cta" id="contact">
+    <div class="wrap cta-inner">
+      <h2>Run InvariantDAST against your staging booking flow.</h2>
+      <p>Pilots start with two test agency accounts and read access to gateway logs. First findings typically land within a day.</p>
+      <form class="cta-form" id="ctaForm">
+        <label class="sr-only" for="email">Work email</label>
+        <input id="email" type="email" required placeholder="you@agency-platform.com" autocomplete="email" />
+        <button class="btn" type="submit">Request a pilot</button>
+      </form>
+      <p class="form-note" id="formNote" aria-live="polite"></p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <span class="brand small"><svg width="18" height="18" viewBox="0 0 32 32" aria-hidden="true"><path d="M7 23 L16 7 L25 23 Z" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/><circle cx="16" cy="17.5" r="2.6" fill="currentColor"/></svg> Invariant<b>DAST</b></span>
+    <span>Neuro-symbolic security testing for stateful travel platforms.</span>
+    <span>© 2026</span>
+  </div>
+</footer>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

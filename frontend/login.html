@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sign in · InvariantDAST</title>
+  <meta name="description" content="Sign in to InvariantDAST." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b0f0d'/%3E%3Cpath d='M8 22 L16 8 L24 22 Z' fill='none' stroke='%237CF29C' stroke-width='2.5' stroke-linejoin='round'/%3E%3Ccircle cx='16' cy='17' r='2.4' fill='%237CF29C'/%3E%3C/svg%3E" />
+</head>
+<body class="auth-body">
+
+<div class="auth">
+  <aside class="auth-side">
+    <a href="index.html" class="brand" aria-label="InvariantDAST home">
+      <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><path d="M7 23 L16 7 L25 23 Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><circle cx="16" cy="17.5" r="2.6" fill="currentColor"/></svg>
+      <span>Invariant<b>DAST</b></span>
+    </a>
+    <div class="auth-pitch">
+      <p class="kicker">Neuro-symbolic DAST</p>
+      <h1>Every finding proven. Every mutation rolled back.</h1>
+      <ul class="ticks">
+        <li>State-aware tests across search → quote → hold → issue → refund</li>
+        <li>Dual-tenant differential oracle for BOLA / IDOR</li>
+        <li>Pull requests with repro, impact and patch</li>
+      </ul>
+    </div>
+    <pre class="auth-snippet" aria-hidden="true"><span class="ok">✓</span> 14/14 mutations compensated
+<span class="crit">✗</span> INVARIANT Σ refunds ≤ fare
+<span class="info">↺</span> PR #318 re-verified → closed</pre>
+  </aside>
+
+  <main class="auth-main">
+    <a href="index.html" class="auth-back">← Back to site</a>
+    <div class="auth-card">
+      <div class="auth-tabs" role="tablist" aria-label="Account">
+        <button class="auth-tab active" id="tab-login" role="tab" aria-selected="true" aria-controls="form-login" data-mode="login">Sign in</button>
+        <button class="auth-tab" id="tab-signup" role="tab" aria-selected="false" aria-controls="form-signup" data-mode="signup">Create account</button>
+      </div>
+
+      <form class="auth-form" id="form-login" role="tabpanel" aria-labelledby="tab-login" novalidate>
+        <h2>Welcome back</h2>
+        <p class="auth-sub">Sign in to your InvariantDAST workspace.</p>
+        <label class="field">
+          <span>Work email</span>
+          <input name="email" type="email" autocomplete="email" required placeholder="you@company.com" />
+        </label>
+        <label class="field">
+          <span>Password</span>
+          <span class="pw">
+            <input name="password" type="password" autocomplete="current-password" required placeholder="Your password" />
+            <button type="button" class="pw-toggle" aria-label="Show password">Show</button>
+          </span>
+        </label>
+        <p class="auth-error" role="alert"></p>
+        <button class="btn btn-block" type="submit">Sign in</button>
+        <p class="auth-switch">New to InvariantDAST? <a href="#signup" data-mode="signup">Create an account</a></p>
+      </form>
+
+      <form class="auth-form" id="form-signup" role="tabpanel" aria-labelledby="tab-signup" hidden novalidate>
+        <h2>Create your account</h2>
+        <p class="auth-sub">Start with two test agency personas and your staging API.</p>
+        <div class="field-row">
+          <label class="field">
+            <span>Full name</span>
+            <input name="name" type="text" autocomplete="name" required maxlength="100" placeholder="Priya Raman" />
+          </label>
+          <label class="field">
+            <span>Company <em>optional</em></span>
+            <input name="company" type="text" autocomplete="organization" maxlength="120" placeholder="Acme Travel" />
+          </label>
+        </div>
+        <label class="field">
+          <span>Work email</span>
+          <input name="email" type="email" autocomplete="email" required placeholder="you@company.com" />
+        </label>
+        <label class="field">
+          <span>Password</span>
+          <span class="pw">
+            <input name="password" type="password" autocomplete="new-password" required minlength="10" maxlength="128" placeholder="At least 10 characters" />
+            <button type="button" class="pw-toggle" aria-label="Show password">Show</button>
+          </span>
+          <span class="pw-meter" aria-hidden="true"><i></i></span>
+          <small class="field-hint">At least 10 characters, mixing letters with numbers or symbols.</small>
+        </label>
+        <p class="auth-error" role="alert"></p>
+        <button class="btn btn-block" type="submit">Create account</button>
+        <p class="auth-switch">Already have an account? <a href="#login" data-mode="login">Sign in</a></p>
+      </form>
+    </div>
+  </main>
+</div>
+
+<script src="config.js"></script>
+<script src="login.js"></script>
+</body>
+</html>

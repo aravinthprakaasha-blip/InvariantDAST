@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard · InvariantDAST</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b0f0d'/%3E%3Cpath d='M8 22 L16 8 L24 22 Z' fill='none' stroke='%237CF29C' stroke-width='2.5' stroke-linejoin='round'/%3E%3Ccircle cx='16' cy='17' r='2.4' fill='%237CF29C'/%3E%3C/svg%3E" />
+</head>
+<body class="dash-body is-loading">
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a href="index.html" class="brand" aria-label="InvariantDAST home">
+      <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><path d="M7 23 L16 7 L25 23 Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><circle cx="16" cy="17.5" r="2.6" fill="currentColor"/></svg>
+      <span>Invariant<b>DAST</b></span>
+    </a>
+    <div class="dash-user">
+      <span class="dash-avatar" id="userInitials" aria-hidden="true"></span>
+      <span class="dash-email" id="userEmail"></span>
+      <button class="btn btn-sm btn-ghost" id="logoutBtn">Sign out</button>
+    </div>
+  </div>
+</header>
+
+<main class="dash wrap">
+  <div class="dash-loading" id="dashLoading">Loading your workspace…</div>
+
+  <div class="dash-content" id="dashContent" hidden>
+    <section class="dash-hello">
+      <p class="kicker" id="workspaceName">Workspace</p>
+      <h1>Welcome, <span id="userName"></span>.</h1>
+    </section>
+
+    <!-- Overview -->
+    <section class="tiles" aria-label="Overview">
+      <div class="tile"><span>Targets</span><b id="ovTargets">0</b></div>
+      <div class="tile"><span>Scans run</span><b id="ovRuns">0</b></div>
+      <div class="tile tile-find"><span>Open findings</span><b id="ovFindings">0</b><small id="ovSev"></small></div>
+      <div class="tile"><span>Requests sent</span><b id="ovRequests">0</b></div>
+      <div class="tile"><span>Compensations</span><b id="ovComp">0</b></div>
+    </section>
+
+    <!-- Live / selected run -->
+    <section class="dash-card run-panel" id="runPanel" hidden aria-live="polite">
+      <header>
+        <div>
+          <h2 id="runTitle">Scan</h2>
+          <small class="muted" id="runMeta"></small>
+        </div>
+        <div class="run-head-right">
+          <span class="pill" id="runStatus">queued</span>
+          <button class="icon-btn" id="runClose" aria-label="Close scan view">✕</button>
+        </div>
+      </header>
+      <div class="progress"><span id="runBar" style="--w:0%"></span></div>
+      <div class="run-stats">
+        <div><span>Checks</span><b id="rsChecks">0 / 12</b></div>
+        <div><span>Passed</span><b id="rsPassed" class="c-ok">0</b></div>
+        <div><span>Failed</span><b id="rsFailed" class="c-crit">0</b></div>
+        <div><span>Requests</span><b id="rsReq">0</b></div>
+        <div><span>Compensated</span><b id="rsComp" class="c-info">0</b></div>
+        <div><span>Duration</span><b id="rsDur">—</b></div>
+      </div>
+      <div class="run-error" id="runError" hidden></div>
+      <ol class="live-log" id="runLog"></ol>
+      <details class="surface" id="runSurfaceWrap" hidden>
+        <summary>Attack surface · <span id="runSurfaceCount">0</span> operations</summary>
+        <div class="table-scroll"><table class="surface-table"><thead><tr><th>Method</th><th>Path</th><th>In OpenAPI spec</th><th>Lifecycle route</th></tr></thead><tbody id="runSurface"></tbody></table></div>
+      </details>
+      <div id="runFindingsWrap" hidden>
+        <h3 class="sub-h">Findings from this scan</h3>
+        <div class="findings" id="runFindings"></div>
+      </div>
+    </section>
+
+    <!-- Targets -->
+    <section class="dash-section">
+      <div class="dash-section-head">
+        <h2>Targets</h2>
+        <button class="btn btn-sm" id="addTargetBtn">+ Add target</button>
+      </div>
+
+      <form class="dash-card target-form" id="targetForm" hidden novalidate>
+        <header><h3>New target</h3><small class="muted">A B2B travel API with search → quote → hold → issue → amend → refund routes.</small></header>
+        <div class="allowed-hint" id="allowedHint" hidden></div>
+        <div class="tf-grid">
+          <label class="field"><span>Name</span><input name="name" required maxlength="80" placeholder="Staging booking API" /></label>
+          <label class="field"><span>Base URL</span><input name="base_url" required placeholder="http://localhost:8001" inputmode="url" /></label>
+          <label class="field"><span>Tenant header</span><input name="auth_header" value="X-Agency-ID" required pattern="[A-Za-z0-9-]+" /></label>
+          <label class="field"><span>Agency A (owner) id</span><input name="persona_a" required placeholder="AGY-A" /></label>
+          <label class="field"><span>Agency B (adversary) id</span><input name="persona_b" required placeholder="AGY-B" /></label>
+          <div class="field-row">
+            <label class="field"><span>Origin</span><input name="origin" required maxlength="8" placeholder="CJB" /></label>
+            <label class="field"><span>Destination</span><input name="destination" required maxlength="8" placeholder="DEL" /></label>
+          </div>
+        </div>
+        <label class="check"><input type="checkbox" name="authorized" /> <span>I own this API or have written permission to security-test it. Scans create and then roll back real bookings.</span></label>
+        <p class="auth-error" id="targetError" role="alert"></p>
+        <div class="tf-actions">
+          <button type="button" class="btn btn-sm btn-ghost" id="targetCancel">Cancel</button>
+          <button type="submit" class="btn btn-sm">Save target</button>
+        </div>
+      </form>
+
+      <div class="target-list" id="targetList"></div>
+    </section>
+
+    <!-- Findings -->
+    <section class="dash-section">
+      <div class="dash-section-head">
+        <h2>Open findings</h2>
+        <small class="muted">From the latest completed scan of each target. Fixed issues drop off when the next scan no longer reproduces them.</small>
+      </div>
+      <div class="findings" id="findingList"></div>
+    </section>
+
+    <!-- Runs -->
+    <section class="dash-section">
+      <div class="dash-section-head"><h2>Scan history</h2></div>
+      <div class="dash-card flush">
+        <div class="table-scroll">
+          <table class="runs-table">
+            <thead><tr><th>#</th><th>Target</th><th>Status</th><th>Result</th><th>Requests</th><th>Duration</th><th>Started</th></tr></thead>
+            <tbody id="runList"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script src="config.js"></script>
+<script src="dashboard.js"></script>
+</body>
+</html>

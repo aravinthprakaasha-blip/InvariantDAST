@@ -1,0 +1,18 @@
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Local data and secrets
+backend/data/
+*.db
+*.db-shm
+*.db-wal
+.env
+.env.*
+
+# Tooling
+.claude/
+.vercel/
+node_modules/

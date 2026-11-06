@@ -1,0 +1,52 @@
+# Render Blueprint: InvariantDAST backend + Postgres + two demo travel APIs to scan.
+# The website itself is hosted on Vercel and forwards /api/* to invariantdast-api.
+
+databases:
+  - name: invariantdast-db
+    plan: free
+    region: singapore
+    databaseName: invariantdast
+    user: invariantdast
+
+services:
+  - type: web
+    name: invariantdast-api
+    runtime: python
+    plan: free
+    region: singapore
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --app-dir backend --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: invariantdast-db
+          property: connectionString
+      - key: INVARIANT_SECURE_COOKIES
+        value: "1"
+      - key: INVARIANT_CORS_ORIGINS
+        value: https://invariantdast.vercel.app
+      # Scope allowlist: only these origins may be scanned. Starts closed and is set to the
+      # two demo API URLs once Render has assigned them.
+      - key: INVARIANT_ALLOWED_TARGETS
+        value: https://pending.invalid
+
+  # Secure reference API: every check should pass.
+  - type: web
+    name: invariantdast-demo-sample
+    runtime: python
+    plan: free
+    region: singapore
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn sample_travel_api.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+
+  # DELIBERATELY VULNERABLE demo API (in-memory fake data only): shows what findings look like.
+  - type: web
+    name: invariantdast-demo-vulnerable
+    runtime: python
+    plan: free
+    region: singapore
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn sample_travel_api.vulnerable_main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
